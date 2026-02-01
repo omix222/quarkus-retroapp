@@ -3,7 +3,9 @@
     "allow": [
       "Bash(tree:*)",
       "Bash(./mvnw test:*)",
-      "Bash(mvn:*)"
+      "Bash(mvn:*)",
+      "Bash(npm install)",
+      "Bash(npm run build:*)"
     ]
   }
 }

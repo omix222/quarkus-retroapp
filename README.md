@@ -4,13 +4,20 @@ QuarkusフレームワークとH2データベースを使用したスクラム�
 
 ## 技術スタック
 
+### バックエンド
 - **フレームワーク**: Quarkus 3.28.3
 - **ビルドツール**: Maven
 - **Javaバージョン**: 17
-- **データベース**: H2（インメモリ）
+- **データベース**: H2（ファイルベース）
 - **ORM**: Hibernate ORM with Panache
 - **REST API**: RESTEasy Reactive with Jackson
 - **API Documentation**: SmallRye OpenAPI (Swagger)
+
+### フロントエンド
+- **ライブラリ**: React 19
+- **ビルドツール**: Vite 6
+- **状態管理**: React Hooks (useState, useEffect)
+- **API通信**: Fetch API
 
 ## 機能
 
@@ -41,29 +48,45 @@ QuarkusフレームワークとH2データベースを使用したスクラム�
 ## プロジェクト構造
 
 ```
+frontend/                          # React SPA (Vite)
+├── package.json
+├── vite.config.js
+├── index.html
+└── src/
+    ├── main.jsx                   # エントリーポイント
+    ├── App.jsx                    # ルートコンポーネント（画面切り替え）
+    ├── App.css                    # グローバルスタイル
+    ├── api.js                     # REST APIクライアント
+    └── components/
+        ├── RetrospectiveList.jsx  # ふりかえり一覧（カードグリッド）
+        ├── RetrospectiveForm.jsx  # ふりかえり作成フォーム
+        ├── RetrospectiveDetail.jsx # 詳細画面（KPTカラム＋アクションアイテム）
+        ├── CardColumn.jsx         # KPTカラム（KEEP/PROBLEM/TRY）
+        ├── CardForm.jsx           # カード追加フォーム
+        ├── ActionItemList.jsx     # アクションアイテム一覧＋ステータス操作
+        └── ActionItemForm.jsx     # アクションアイテム追加フォーム
+
 src/
 ├── main/
 │   ├── java/com/example/
-│   │   ├── entity/          # エンティティクラス
+│   │   ├── entity/                # エンティティクラス
 │   │   │   ├── Retrospective.java
 │   │   │   ├── Card.java
 │   │   │   ├── CardType.java
 │   │   │   ├── ActionItem.java
 │   │   │   └── ActionItemStatus.java
-│   │   ├── repository/      # リポジトリクラス
+│   │   ├── repository/            # リポジトリクラス
 │   │   │   ├── RetrospectiveRepository.java
 │   │   │   ├── CardRepository.java
 │   │   │   └── ActionItemRepository.java
-│   │   └── resource/        # REST APIエンドポイント
+│   │   └── resource/              # REST APIエンドポイント
 │   │       ├── RetrospectiveResource.java
 │   │       ├── CardResource.java
 │   │       └── ActionItemResource.java
 │   └── resources/
-│       ├── META-INF/resources/
-│       │   ├── index.html   # フロントエンドUI
-│       │   └── app.js       # JavaScriptロジック
+│       ├── META-INF/resources/    # Viteビルド出力先（自動生成）
 │       ├── application.properties
-│       └── import.sql       # サンプルデータ
+│       └── import.sql             # サンプルデータ
 ```
 
 ## セットアップと実行
@@ -71,19 +94,41 @@ src/
 ### 前提条件
 - JDK 17以上
 - Maven 3.8以上
+- Node.js 18以上
 
-### 開発モードで実行
+### フロントエンドの初期設定
 ```bash
-mvn quarkus:dev
+cd frontend
+npm install
 ```
 
-アプリケーションは http://localhost:8080 で起動します。
+### 開発モードで実行
+
+ターミナルを2つ開いて、それぞれ以下を実行します。
+
+```bash
+# ターミナル1: バックエンド（ポート8080）
+mvn quarkus:dev
+
+# ターミナル2: フロントエンド開発サーバー（ポート5173）
+cd frontend
+npm run dev
+```
+
+開発時は http://localhost:5173 にアクセスします。Vite開発サーバーが `/api` へのリクエストをQuarkus（:8080）にプロキシします。
 
 ### プロダクションビルド
 ```bash
+# フロントエンドをビルド（出力先: src/main/resources/META-INF/resources/）
+cd frontend
+npm run build
+
+# バックエンドをパッケージング（ビルド済みフロントエンドを含む）
 mvn clean package
 java -jar target/quarkus-app/quarkus-run.jar
 ```
+
+プロダクションモードでは http://localhost:8080 でフロントエンドとバックエンドの両方が配信されます。
 
 ## REST API エンドポイント
 
@@ -96,20 +141,20 @@ java -jar target/quarkus-app/quarkus-run.jar
 - `DELETE /api/retrospectives/{id}` - ふりかえりを削除
 
 ### カード
-- `GET /api/retrospectives/{id}/cards` - レトロスペクティブのカードを取得
-- `GET /api/retrospectives/{id}/cards/type/{type}` - タイプ別にカードを取得
-- `GET /api/retrospectives/{id}/cards/top-voted?limit=5` - 投票数上位のカードを取得
-- `POST /api/retrospectives/{id}/cards` - カードを追加
+- `GET /api/cards/retrospectives/{id}` - レトロスペクティブのカードを取得
+- `GET /api/cards/retrospectives/{id}/type/{type}` - タイプ別にカードを取得
+- `GET /api/cards/retrospectives/{id}/top-voted?limit=5` - 投票数上位のカードを取得
+- `POST /api/cards/retrospectives/{id}` - カードを追加
 - `PUT /api/cards/{id}` - カードを更新
 - `POST /api/cards/{id}/vote` - カードに投票
 - `POST /api/cards/{id}/unvote` - 投票を取り消し
 - `DELETE /api/cards/{id}` - カードを削除
 
 ### アクションアイテム
-- `GET /api/retrospectives/{id}/action-items` - レトロスペクティブのアクションアイテムを取得
-- `GET /api/retrospectives/{id}/action-items/status/{status}` - ステータス別に取得
+- `GET /api/action-items/retrospectives/{id}` - レトロスペクティブのアクションアイテムを取得
+- `GET /api/action-items/retrospectives/{id}/status/{status}` - ステータス別に取得
 - `GET /api/action-items/assignee/{assignee}` - 担当者別に取得
-- `POST /api/retrospectives/{id}/action-items` - アクションアイテムを追加
+- `POST /api/action-items/retrospectives/{id}` - アクションアイテムを追加
 - `PUT /api/action-items/{id}` - アクションアイテムを更新
 - `PATCH /api/action-items/{id}/status?status={status}` - ステータスを更新
 - `DELETE /api/action-items/{id}` - アクションアイテムを削除
@@ -125,7 +170,7 @@ http://localhost:8080/swagger-ui/
 - 複数のアクションアイテム
 
 ## データベース
-H2インメモリデータベースを使用しています。アプリケーション再起動時にデータはリセットされます。
+H2ファイルベースデータベースを使用しています（`./data/retrospective`）。データはアプリケーション再起動後も保持されます。
 
 ## 設定ファイル（application.properties）
 主要な設定：
@@ -135,11 +180,20 @@ H2インメモリデータベースを使用しています。アプリケーシ
 - CORS設定
 - Swagger UI有効化
 
-## 開発のポイント
+## アーキテクチャ
+
+### バックエンド（3層構造）
+- **Entity** → **Repository** → **Resource（RESTコントローラー）**
+- DTOは使わず、エンティティを直接JSONにシリアライズ
 - Panache Repositoryパターンによる簡潔なデータアクセス
-- REST APIの適切なHTTPメソッドとステータスコード使用
 - トランザクション管理（@Transactional）
-- エンティティ間の適切な関連付け（@OneToMany, @ManyToOne）
+- エンティティ間の関連付け（@OneToMany, @ManyToOne、カスケード削除）
+
+### フロントエンド（React SPA）
+- Viteでビルドし、Quarkusの静的リソースディレクトリへ出力
+- コンポーネント単位でデータ取得・ローカルステート管理
+- 外部状態管理ライブラリは不使用（React Hooksのみ）
+- 開発時はVite開発サーバーがAPIリクエストをバックエンドにプロキシ
 
 ## 今後の拡張案
 - ユーザー認証・認可機能
