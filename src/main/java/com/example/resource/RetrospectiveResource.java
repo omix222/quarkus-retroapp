@@ -7,6 +7,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.hibernate.Hibernate;
 
 import java.util.List;
 
@@ -76,6 +77,9 @@ public class RetrospectiveResource {
         retrospective.title = updatedRetrospective.title;
         retrospective.date = updatedRetrospective.date;
         retrospective.description = updatedRetrospective.description;
+
+        Hibernate.initialize(retrospective.cards);
+        Hibernate.initialize(retrospective.actionItems);
 
         return Response.ok(retrospective).build();
     }
