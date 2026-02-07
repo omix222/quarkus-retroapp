@@ -7,6 +7,7 @@ import com.example.repository.ActionItemRepository;
 import com.example.repository.RetrospectiveRepository;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -65,7 +66,7 @@ public class ActionItemResource {
     @POST
     @Path("/retrospectives/{id}")
     @Transactional
-    public Response createActionItem(@PathParam("id") Long retrospectiveId, ActionItem actionItem) {
+    public Response createActionItem(@PathParam("id") Long retrospectiveId, @Valid ActionItem actionItem) {
         Retrospective retrospective = retrospectiveRepository.findById(retrospectiveId);
         if (retrospective == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -83,7 +84,7 @@ public class ActionItemResource {
     @PUT
     @Path("/{id}")
     @Transactional
-    public Response updateActionItem(@PathParam("id") Long id, ActionItem updatedActionItem) {
+    public Response updateActionItem(@PathParam("id") Long id, @Valid ActionItem updatedActionItem) {
         ActionItem actionItem = actionItemRepository.findById(id);
         if (actionItem == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -91,6 +92,7 @@ public class ActionItemResource {
 
         actionItem.description = updatedActionItem.description;
         actionItem.assignee = updatedActionItem.assignee;
+        actionItem.jiraTicket = updatedActionItem.jiraTicket;
         actionItem.status = updatedActionItem.status;
 
         return Response.ok(actionItem).build();

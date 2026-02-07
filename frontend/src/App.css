@@ -212,3 +212,21 @@ button:hover {
 .back-button {
   margin-bottom: 20px;
 }
+
+.jira-ticket {
+  display: inline-block;
+  background: #0052cc;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  display: block;
+}

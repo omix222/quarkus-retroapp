@@ -109,6 +109,38 @@ class ActionItemResourceTest {
     }
 
     @Test
+    void createActionItemWithJiraTicket() {
+        given()
+            .contentType("application/json")
+            .body("{\"description\":\"New task\",\"assignee\":\"Alice\",\"jiraTicket\":\"RETRO-123\"}")
+            .when().post("/api/action-items/retrospectives/" + retroId)
+            .then()
+            .statusCode(201)
+            .body("description", equalTo("New task"))
+            .body("jiraTicket", equalTo("RETRO-123"));
+    }
+
+    @Test
+    void createActionItemWithInvalidJiraTicketReturns400() {
+        given()
+            .contentType("application/json")
+            .body("{\"description\":\"New task\",\"assignee\":\"Alice\",\"jiraTicket\":\"invalid-ticket\"}")
+            .when().post("/api/action-items/retrospectives/" + retroId)
+            .then()
+            .statusCode(400);
+    }
+
+    @Test
+    void createActionItemWithEmptyDescriptionReturns400() {
+        given()
+            .contentType("application/json")
+            .body("{\"description\":\"\",\"assignee\":\"Alice\"}")
+            .when().post("/api/action-items/retrospectives/" + retroId)
+            .then()
+            .statusCode(400);
+    }
+
+    @Test
     void createActionItemReturns404WhenRetrospectiveNotFound() {
         given()
             .contentType("application/json")
@@ -131,6 +163,19 @@ class ActionItemResourceTest {
             .body("description", equalTo("Updated"))
             .body("assignee", equalTo("Bob"))
             .body("status", equalTo("IN_PROGRESS"));
+    }
+
+    @Test
+    void updateActionItemWithJiraTicket() {
+        ActionItem item = createItem("Original", "Alice", ActionItemStatus.TODO);
+
+        given()
+            .contentType("application/json")
+            .body("{\"description\":\"Updated\",\"assignee\":\"Bob\",\"status\":\"IN_PROGRESS\",\"jiraTicket\":\"PROJECT-456\"}")
+            .when().put("/api/action-items/" + item.id)
+            .then()
+            .statusCode(200)
+            .body("jiraTicket", equalTo("PROJECT-456"));
     }
 
     @Test

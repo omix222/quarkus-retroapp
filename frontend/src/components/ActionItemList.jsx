@@ -46,6 +46,12 @@ export default function ActionItemList({ retroId }) {
           <div key={item.id} className={`action-item ${item.status}`}>
             <div>
               <strong>{item.description}</strong>
+              {item.jiraTicket && (
+                <>
+                  <br />
+                  <span className="jira-ticket">{item.jiraTicket}</span>
+                </>
+              )}
               {item.assignee && (
                 <>
                   <br />
