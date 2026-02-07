@@ -15,6 +15,8 @@
     <quarkus.platform.version>3.28.3</quarkus.platform.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.5.4</surefire-plugin.version>
+    <pitest.version>1.17.4</pitest.version>
+    <pitest-junit5-plugin.version>1.2.1</pitest-junit5-plugin.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -120,6 +122,41 @@
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
           </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>${pitest.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-junit5-plugin</artifactId>
+            <version>${pitest-junit5-plugin.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <!-- Target only entity classes (pure Java, no CDI) -->
+          <targetClasses>
+            <param>com.example.entity.*</param>
+          </targetClasses>
+          <!-- Exclude @QuarkusTest classes (incompatible with PITest classloader) -->
+          <targetTests>
+            <param>com.example.entity.*Test</param>
+          </targetTests>
+          <excludedTestClasses>
+            <param>com.example.repository.*</param>
+            <param>com.example.resource.*</param>
+          </excludedTestClasses>
+          <mutators>
+            <mutator>DEFAULTS</mutator>
+          </mutators>
+          <outputFormats>
+            <format>HTML</format>
+            <format>XML</format>
+          </outputFormats>
+          <timestampedReports>false</timestampedReports>
+          <verbose>true</verbose>
         </configuration>
       </plugin>
     </plugins>

@@ -57,4 +57,17 @@ H2 file-based database stored in `./data/retrospective`. Schema generation is `u
 
 ## Testing
 
-Uses `quarkus-junit5` and REST Assured. Test classes go in `src/test/java/com/example/`. No tests exist yet — test infrastructure is configured in pom.xml but `src/test/` is empty.
+Uses `quarkus-junit5` and REST Assured. Test classes go in `src/test/java/com/example/`.
+
+```bash
+# Run all tests
+./mvnw test
+
+# Run mutation testing (PITest) - targets entity classes only
+./mvnw test-compile org.pitest:pitest-maven:mutationCoverage
+
+# View mutation report
+open target/pit-reports/index.html
+```
+
+**Mutation Testing**: PITest is configured for entity classes (`com.example.entity.*`). Repository and Resource tests use `@QuarkusTest` which is incompatible with PITest's classloader, so they are excluded from mutation testing.

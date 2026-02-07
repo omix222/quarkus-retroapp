@@ -130,6 +130,44 @@ java -jar target/quarkus-app/quarkus-run.jar
 
 プロダクションモードでは http://localhost:8080 でフロントエンドとバックエンドの両方が配信されます。
 
+## テスト
+
+### ユニットテスト・統合テスト
+```bash
+# すべてのテストを実行
+mvn test
+
+# 特定のテストクラスを実行
+mvn test -Dtest=com.example.resource.RetrospectiveResourceTest
+
+# 統合テストを含めて実行
+mvn verify
+```
+
+### ミューテーションテスト（PITest）
+コードの品質を検証するためのミューテーションテストを実行できます。
+
+```bash
+# ミューテーションテストを実行
+mvn test-compile org.pitest:pitest-maven:mutationCoverage
+
+# レポートを表示（macOS）
+open target/pit-reports/index.html
+
+# レポートを表示（Linux）
+xdg-open target/pit-reports/index.html
+```
+
+**注意**: PITestはエンティティクラス（`com.example.entity.*`）のみを対象としています。Repository/ResourceテストはQuarkusのクラスローダーとの互換性の問題により除外されています。
+
+### テスト構成
+```
+src/test/java/com/example/
+├── entity/           # エンティティの単体テスト（PITest対象）
+├── repository/       # リポジトリの統合テスト（@QuarkusTest）
+└── resource/         # REST APIの統合テスト（@QuarkusTest）
+```
+
 ## REST API エンドポイント
 
 ### レトロスペクティブ
